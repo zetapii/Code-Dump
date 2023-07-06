@@ -20,8 +20,8 @@ class VersionQueue
 {
 private:
     int curVersion;
-    vector<node<T>*> head;  // Removed typename keyword
-    vector<node<T>*> tail;  // Removed typename keyword
+    vector<node<T>*> head;  
+    vector<node<T>*> tail; 
 
 public:
     VersionQueue()
