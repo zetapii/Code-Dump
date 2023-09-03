@@ -66,6 +66,16 @@ class String
         }
         return *this;
     }
+
+    bool operator == (String &other)
+    {
+        if(len!=other.len)
+            return false;
+        if(len==0)  
+            return true;
+        if(strcmp(data,other.data)==0)  return true;
+        return false;
+    }
     friend ostream& operator << (ostream& output,const String& str);
 };
 
@@ -80,6 +90,14 @@ int main()
 {
     String currentString("bcdef");
     String otherString("lmaof");
+    if(currentString==otherString)
+    {
+        cout<<"they are same";
+    }
+    else 
+    {
+        cout<<"they are diferent";
+    }
     cout<<currentString<<" "<<otherString<<endl;
     currentString=otherString;
     cout<<currentString<<endl;
