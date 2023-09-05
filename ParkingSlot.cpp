@@ -1,3 +1,4 @@
+#include <iostream>
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -69,9 +70,19 @@ class ParkingLot
 {
     private:
     vector<ParkingSlot*> vParkingSlot;
-    public:
-    ParkingLot(){}
+    inline static ParkingLot* instance=NULL;
+    ParkingLot()
+    {
+    }
 
+    public:
+
+    static ParkingLot* getParkingLotInstance()
+    {
+        if(instance==NULL)
+            instance=new ParkingLot();
+        return instance; 
+    }
     void addSlot(ParkingSlot* toAdd)
     {
         vParkingSlot.push_back(toAdd);
@@ -96,6 +107,7 @@ class ParkingLot
                 return itr->FreeSlot(time);
             }
         }
+        return 0;
     }
     void assignSlot(Vehicle* toAdd,int curTime)
     {
@@ -116,7 +128,7 @@ int main()
     Vehicle* v2 = new Vehicle("Kaif","9867",MEDIUM);
     ParkingSlot* pslot1 = new ParkingSlot(SMALL);
     ParkingSlot* pslot2 = new ParkingSlot(MEDIUM);
-    ParkingLot* plot = new ParkingLot();
+    ParkingLot* plot = ParkingLot::getParkingLotInstance();
     plot->addSlot(pslot1);
     plot->addSlot(pslot2);
     // cout<<plot->checkAvailablity(v1)<<endl;
