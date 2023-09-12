@@ -1,73 +1,160 @@
 #include <iostream>
+#include <vector>
+#include <map>
 #include <bits/stdc++.h>
 using namespace std;
 
-
-class Cache
+class Node 
 {
     public:
-    virtual void set(int key,int value){}
-    virtual int get(int key){}
+    int val;
+    int key;
+    Node* nxt;
+    Node* pre;
+    Node(int key_, int val_) 
+    {
+        pre = NULL;
+        nxt = NULL;
+        val = val_;
+        key = key_;
+    }
 };
 
-class LRUCache:public Cache 
+class Cache 
 {
-    private:
-    map<int,int> maps;
     public:
-    LRUCache()
+    virtual void put(int key, int val) = 0;
+    virtual int get(int key) = 0;
+    virtual ~Cache() {}
+};
+
+class LRUCache : public Cache 
+{
+    public:
+    Node* head;
+    Node* tail;
+    int cap;
+    unordered_map<int, Node*> maps;
+
+    LRUCache(int cap_) : cap(cap_) 
     {
+        head = new Node(-1, -1);
+        tail = new Node(-1, -1);
+        head->nxt = tail;
+        tail->pre = head;
     }
-    void set(int key,int val)
+
+    void pushFront(Node* cur) 
     {
-        maps[key]=val;
+        cur->nxt = head->nxt;
+        head->nxt = cur;
+        cur->pre = head;
+        return;
     }
-    int get(int key)
+
+    void put(int key, int val) override 
     {
-        if(maps.find(key)!=maps.end())
-            return maps[key];
+        if (maps.find(key) == maps.end()) 
+        {
+            if (maps.size() == cap) 
+            {
+                maps.erase(maps.find(head->nxt->key));
+                head->nxt->nxt->pre = head;
+                head->nxt = head->nxt->nxt;
+            }
+            Node* cur = new Node(key, val);
+            pushFront(cur);
+            maps[key] = cur;
+        }
+        else 
+        {
+            Node* cur = maps[key];
+            cur->pre->nxt = cur->nxt;
+            cur->nxt->pre = cur->pre;
+            pushFront(cur);
+            cur->val = val;
+        }
+    }
+
+    int get(int key) override 
+    {
+        if (maps.find(key) == maps.end()) 
+        {
+            return -1;
+        }
+        else 
+        {
+            Node* cur = maps[key];
+            cur->pre->nxt = cur->nxt;
+            cur->nxt->pre = cur->pre;
+            pushFront(cur);
+            return cur->val;
+        }
+    }
+
+    ~LRUCache() 
+    {
+        delete head;
+        delete tail;
+    }
+};
+
+class FCFCCache : public Cache 
+{
+    public: 
+    unordered_map<int, int> data;
+    
+    void put(int key, int val) override 
+    {
+        data[key] = val;
+    }
+
+    int get(int key) override 
+    {
+        if (data.find(key) != data.end()) 
+        {
+            return data[key];
+        }
         return -1;
     }
 };
 
-class FCFSCache:public Cache 
-{
-    private:
-    map<int,int> maps;
-    public:
-    FCFSCache()
-    {
-
-    }
-    void set(int key,int val)
-    {
-        maps[key]=val;
-    }
-    int get(int key)
-    {
-        if(maps.find(key)!=maps.end())
-            return maps[key];
-        return -1;
-    }
-};
-
-class CacheFactory
+class CacheFactory 
 {
     public:
-    static Cache* get(string type)
+    static Cache* createCache(int cap, string type) 
     {
-        if(type=="LRU")
-            return new LRUCache();
-        if(type=="FCFS")
-            return new FCFSCache();
-        return NULL;
+        if (type=="LRU") 
+        {
+            return new LRUCache(cap);
+        }
+        else if(type=="FCFS") 
+        {
+            return new FCFCCache();
+        }
+        else 
+        {
+            return NULL;
+        }
     }
 };
 
 int main() 
 {
-    Cache* c1=CacheFactory::get("LRU");
-    c1->set(1,2);
-    cout<<c1->get(3);
+
+    Cache* cache = CacheFactory::createCache(3, "LRU");
+
+    cache->put(1, 10);
+    cache->put(2, 20);
+    cache->put(3, 30);
+
+    cout << cache->get(2) << endl; // Output: 20
+
+    cache->put(4, 40);
+
+    cout << cache->get(1) << endl; // Output: -1 (not found)
+
+    delete cache;
+
     return 0;
 }
