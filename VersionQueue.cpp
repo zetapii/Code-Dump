@@ -9,6 +9,7 @@ class Vector
     int cap;
     int siz;
     T* arr;
+    
     public:
     Vector()
     {
@@ -17,22 +18,23 @@ class Vector
         arr=nullptr;
         reserve(1);
     }
+
     void reserve(int new_size)
     {
         if (new_size > cap)
         {
-            T* tmp = static_cast<T*>(::operator new(sizeof(T) * new_size)); // Allocate raw memory
+            T* tmp = static_cast<T*>(::operator new(sizeof(T) * new_size)); 
             for (int i = 0; i < siz; i++)
-                tmp[i]=arr[i];
+                new (&tmp[i]) T(arr[i]); 
             cap = new_size;
             if(arr!=nullptr)
-                ::operator delete(arr); 
-            arr = tmp; 
+                ::operator delete(arr);
+            arr = tmp;
         }
         return ;
     }
 
-    void push_back(const T& val)
+    void push_back(const T val)
     {
         if(cap==siz)
         {
@@ -42,14 +44,17 @@ class Vector
         siz++;
         return ;
     }
-    void push_back(T&& val)
+    size_t size()
     {
-        if(cap==siz)
+        return siz;
+    }
+    T& back()
+    {
+        if(siz==0)
         {
-            reserve(2*siz);
+            throw::runtime_error("out of range");
         }
-        arr[siz]=std::move(val);
-        siz++;
+        return arr[siz-1];
     }
     T& operator [] (size_t idx)
     {
@@ -133,20 +138,20 @@ class VersionQueue
 
     void print(int version)
     {
-        if (version > curVersion)
-            return;
+            if (version > curVersion)
+                return;
 
-        node<T>* cur = head[version];
-        while (cur)
-        {
-            cout << cur->data << " ";
-            if (cur == tail[version])
-                break;
-            cur = cur->nxt;
+            node<T>* cur = head[version];
+            while (cur)
+            {
+                cout << cur->data << " ";
+                if (cur == tail[version])
+                    break;
+                cur = cur->nxt;
+            }
+            cout << endl;
+            return;
         }
-        cout << endl;
-        return;
-    }
 };
 
 int main() 
@@ -157,11 +162,13 @@ int main()
         VersionQueue<int> qu;
         qu.enqueue(4);
         qu.enqueue(5);
-        qu.print(1);
-        qu.dequeue();
+        qu.enqueue(100);
+        qu.print(2);
+        // qu.dequeue();
         qu.enqueue(100);
         qu.enqueue(200);
-        qu.print(4);
+        
+        qu.print(3);
     }
     catch(const std::exception& e)
     {
