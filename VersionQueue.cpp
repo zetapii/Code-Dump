@@ -1,61 +1,68 @@
 #include <iostream>
 using namespace std;
 
+
 template<typename T>
 class Vector
 {
-    private:
-    T* vec;
-    size_t cap;
-    size_t siz;
+    public:
+    int cap;
+    int siz;
+    T* arr;
     public:
     Vector()
     {
-        vec = new T[1];
-        cap = 1;
-        siz = 0;
+        cap=0;
+        siz=0;
+        arr=nullptr;
+        reserve(1);
+    }
+    void reserve(int new_size)
+    {
+        if (new_size > cap)
+        {
+            T* tmp = static_cast<T*>(::operator new(sizeof(T) * new_size)); // Allocate raw memory
+            for (int i = 0; i < siz; i++)
+                tmp[i]=arr[i];
+            cap = new_size;
+            if(arr!=nullptr)
+                ::operator delete(arr); 
+            arr = tmp; 
+        }
+        return ;
+    }
+
+    void push_back(const T& val)
+    {
+        if(cap==siz)
+        {
+            reserve(2*cap);
+        }
+        arr[siz]=val;
+        siz++;
+        return ;
+    }
+    void push_back(T&& val)
+    {
+        if(cap==siz)
+        {
+            reserve(2*siz);
+        }
+        arr[siz]=std::move(val);
+        siz++;
+    }
+    T& operator [] (size_t idx)
+    {
+        if(idx>=siz)
+        {
+            throw::runtime_error("out of range");
+        }
+        else 
+            return arr[idx];
     }
     ~Vector()
     {
-        delete [] vec;
-    }
-    int size()
-    {
-        return siz;
-    }
-    void push_back(const T element)
-    {
-        if(siz==cap)
-        {
-            T* tmp = new T[2*cap];
-            for(int i=0;i<siz;i++)
-                tmp[i]=vec[i];
-            delete [] vec;
-            cap*=2;
-            vec=tmp;
-        }
-        vec[siz++]=element;
-        return ;
-    }
-    T& back() 
-    {
-        return vec[siz - 1];
-    }
-    const T& operator[](size_t index) const
-    {
-        if (index >= siz) 
-        {
-            throw std::out_of_range("Index out of range");
-        }
-        return vec[index];
-    }
-    T& operator[](size_t index)
-    {
-        if (index >= siz) 
-        {
-            throw std::out_of_range("Index out of range");
-        }
-        return vec[index];
+        ::operator delete(arr); 
     }
 };
 
