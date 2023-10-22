@@ -28,74 +28,79 @@ class Cache
     virtual ~Cache() {}
 };
 
-class LRUCache : public Cache 
+class LRUCache:public Cache
 {
     public:
     Node* head;
     Node* tail;
     int cap;
-    unordered_map<int, Node*> maps;
-
-    LRUCache(int cap_) : cap(cap_) 
+    unordered_map<int,Node*> maps;
+    LRUCache(int cap_)
     {
-        head = new Node(-1, -1);
-        tail = new Node(-1, -1);
-        head->nxt = tail;
-        tail->pre = head;
+        cap=cap_;
+        head = new Node(-1,-1);
+        tail = new Node(-1,-1);
+        head -> nxt = tail;
+        tail -> pre = head;
+    }
+    
+    void pushFront(Node* cur)
+    {
+        head->nxt->pre=cur;
+        cur->nxt=head->nxt;
+        head->nxt=cur;
+        cur->pre=head;
+        return ;
     }
 
-    void pushFront(Node* cur) 
+    void put(int key,int val)
     {
-        cur->nxt = head->nxt;
-        head->nxt = cur;
-        cur->pre = head;
-        return;
-    }
-
-    void put(int key, int val) override 
-    {
-        if (maps.find(key) == maps.end()) 
+        if(maps.find(key)==maps.end())
         {
-            if (maps.size() == cap) 
+            if(maps.size()==cap)
             {
-                maps.erase(maps.find(head->nxt->key));
-                head->nxt->nxt->pre = head;
-                head->nxt = head->nxt->nxt;
+                 maps.erase(maps.find(tail->pre->key));
+                 tail->pre->pre->nxt=tail;
+                 tail->pre=tail->pre->pre;
             }
-            Node* cur = new Node(key, val);
+            Node* cur = new Node(key,val);
             pushFront(cur);
-            maps[key] = cur;
+            maps[key]=cur;
         }
         else 
         {
-            Node* cur = maps[key];
-            cur->pre->nxt = cur->nxt;
-            cur->nxt->pre = cur->pre;
+            Node* cur=maps[key];
+            cur->pre->nxt=cur->nxt;
+            cur->nxt->pre=cur->pre;
             pushFront(cur);
-            cur->val = val;
+            cur->val=val;
         }
     }
 
-    int get(int key) override 
+    int get(int key)
     {
-        if (maps.find(key) == maps.end()) 
+        if(maps.find(key)==maps.end())
         {
             return -1;
         }
         else 
         {
-            Node* cur = maps[key];
-            cur->pre->nxt = cur->nxt;
-            cur->nxt->pre = cur->pre;
+            Node* cur=maps[key];
+            cur->pre->nxt=cur->nxt;
+            cur->nxt->pre=cur->pre;
             pushFront(cur);
             return cur->val;
         }
     }
-
-    ~LRUCache() 
+    ~LRUCache()
     {
-        delete head;
-        delete tail;
+        Node* cur=head;
+        while(cur!=NULL)
+        {
+            Node* tmp=cur;
+            cur=cur->nxt;
+            delete(tmp);
+        }
     }
 };
 
