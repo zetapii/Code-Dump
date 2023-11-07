@@ -67,7 +67,11 @@ class Vector
     }
     ~Vector()
     {
-        ::operator delete(arr); 
+        for (int i = 0; i < siz; i++)
+        {
+            arr[i].~T(); 
+        }
+        ::operator delete(arr);
     }
 };
 
