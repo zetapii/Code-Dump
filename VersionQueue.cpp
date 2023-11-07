@@ -40,7 +40,7 @@ class Vector
         {
             reserve(2*cap);
         }
-        arr[siz]=val;
+        new (&arr[siz]) T(val);
         siz++;
         return ;
     }
@@ -167,8 +167,9 @@ int main()
         // qu.dequeue();
         qu.enqueue(100);
         qu.enqueue(200);
-        
         qu.print(3);
+        qu.print(5);
+
     }
     catch(const std::exception& e)
     {
