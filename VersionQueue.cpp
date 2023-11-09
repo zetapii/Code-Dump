@@ -2,20 +2,68 @@
 using namespace std;
 
 
-template<typename T>
+template <typename T>
 class Vector
 {
-    public:
+private:
     int cap;
     int siz;
-    T* arr;
-    
+    T *arr;
+
+public:
+    // Define iterator type
+    class Iterator
+    {
     public:
+
+        Iterator(T* ptr) : m_itr_ptr(ptr) {}
+        Iterator operator++()
+        {
+            Iterator old_itr = *this;
+            m_itr_ptr++;
+            return old_itr;
+        }
+
+        Iterator operator++(int dummy)
+        {
+            m_itr_ptr++;
+            return *this;
+        }
+
+        Iterator operator--()
+        {
+            Iterator old_itr = *this;
+            m_itr_ptr--;
+            return old_itr;
+        }
+
+        Iterator operator--(int dummy)
+        {
+            m_itr_ptr--;
+            return *this;
+        }
+
+        T& operator*() const { return *m_itr_ptr; }
+
+        T* operator->() const { return m_itr_ptr; }
+
+        bool operator==(const Iterator &rhs) { return m_itr_ptr == rhs.m_itr_ptr; }
+
+        bool operator!=(const Iterator &rhs) { return m_itr_ptr != rhs.m_itr_ptr; }
+
+    private:
+        T* m_itr_ptr;
+    };
+
+    // Begin and end functions to get iterators
+    Iterator begin() { return Iterator(arr); }
+    Iterator end() { return Iterator(arr + siz); }
+
     Vector()
     {
-        cap=0;
-        siz=0;
-        arr=nullptr;
+        cap = 0;
+        siz = 0;
+        arr = nullptr;
         reserve(1);
     }
 
@@ -23,58 +71,61 @@ class Vector
     {
         if (new_size > cap)
         {
-            T* tmp = static_cast<T*>(::operator new(sizeof(T) * new_size)); 
+            T *tmp = static_cast<T *>(::operator new(sizeof(T) * new_size));
             for (int i = 0; i < siz; i++)
-                new (&tmp[i]) T(arr[i]); 
+                new (&tmp[i]) T(arr[i]);
             cap = new_size;
-            if(arr!=nullptr)
+            if (arr != nullptr)
                 ::operator delete(arr);
             arr = tmp;
         }
-        return ;
+        return;
     }
 
     void push_back(const T val)
     {
-        if(cap==siz)
+        if (cap == siz)
         {
-            reserve(2*cap);
+            reserve(2 * cap);
         }
         new (&arr[siz]) T(val);
         siz++;
-        return ;
+        return;
     }
+
     size_t size()
     {
         return siz;
     }
-    T& back()
+
+    T &back()
     {
-        if(siz==0)
+        if (siz == 0)
         {
-            throw::runtime_error("out of range");
+            throw std::runtime_error("out of range");
         }
-        return arr[siz-1];
+        return arr[siz - 1];
     }
-    T& operator [] (size_t idx)
+
+    T &operator[](size_t idx)
     {
-        if(idx>=siz)
+        if (idx >= siz)
         {
-            throw::runtime_error("out of range");
+            throw std::runtime_error("out of range");
         }
-        else 
+        else
             return arr[idx];
     }
+
     ~Vector()
     {
         for (int i = 0; i < siz; i++)
         {
-            arr[i].~T(); 
+            arr[i].~T();
         }
         ::operator delete(arr);
     }
 };
-
 
 template<typename T>
 struct node 
@@ -160,6 +211,12 @@ class VersionQueue
 
 int main() 
 {
+    Vector<int> vec;
+    for(int A=0;A<=6;A++)
+        vec.push_back(A);
+    Vector<int>::Iterator it=vec.begin();
+    for(;it!=vec.end();it++)
+        std::cout<<*it<<" ";
     try
     {
         /* code */
