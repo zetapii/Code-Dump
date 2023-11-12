@@ -67,6 +67,26 @@ public:
         reserve(1);
     }
 
+    Vector(Vector& other):cap(0),siz(0),arr(nullptr)
+    {
+        reserve(other.cap);
+        siz=other.siz;
+        for(int i=0;i<siz;i++)
+        {
+            new(&arr[i])T(other.arr[i]);
+        }
+    }
+
+
+    Vector(Vector&& other):cap(other.cap),siz(other.siz),arr(other.arr)
+    {
+        other.cap=0;
+        other.siz=0;
+        other.arr=nullptr;
+        return ;
+    }
+
+
     void reserve(int new_size)
     {
         if (new_size > cap)
@@ -116,6 +136,7 @@ public:
         else
             return arr[idx];
     }
+
 
     ~Vector()
     {
