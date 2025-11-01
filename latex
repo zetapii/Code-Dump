@@ -775,3 +775,63 @@ the output once.
  \end{document}
 
 
+@article{horowitz1974computing,
+  author = {Horowitz, Ellis and Sahni, Sartaj},
+  title = {Computing Partitions with Applications to the Knapsack Problem},
+  journal = {Journal of the ACM},
+  volume = {21},
+  number = {2},
+  pages = {277--292},
+  year = {1974}
+}
+
+@inproceedings{koiliaris2015faster,
+  author = {Koiliaris, Konstantinos and Xu, Chao},
+  title = {A Faster Pseudopolynomial Time Algorithm for Subset Sum},
+  booktitle = {Proceedings of the ACM-SIAM Symposium on Discrete Algorithms (SODA)},
+  year = {2017},
+  pages = {1062--1072}
+}
+
+@inproceedings{schroeppel1981turing,
+  author = {Schroeppel, Richard and Shamir, Adi},
+  title = {A Turing Machine Approach to the Multidimensional Subset Sum Problem},
+  journal = {SIAM Journal on Computing},
+  volume = {10},
+  number = {3},
+  pages = {511--519},
+  year = {1981}
+}
+
+@inproceedings{bringmann2017subset,
+  author = {Bringmann, Karl},
+  title = {A Near-Linear Pseudopolynomial Time Algorithm for Subset Sum},
+  booktitle = {Proceedings of the ACM-SIAM Symposium on Discrete Algorithms (SODA)},
+  year = {2017},
+  pages = {1073--1084}
+}
+
+@article{jin2020fast,
+  author = {Jin, Ce and Vyas, Nikhil and Williams, Ryan},
+  title = {Fast Low-Space Algorithms for Subset Sum},
+  journal = {arXiv preprint},
+  volume = {2011.03819},
+  year = {2020}
+}
+
+@article{bringmann2020dense,
+  author = {Bringmann, Karl and Wellnitz, Philip},
+  title = {On Near-Linear-Time Algorithms for Dense Subset Sum},
+  journal = {arXiv preprint},
+  volume = {2010.09096},
+  year = {2020}
+}
+
+@article{salas2025adaptive,
+  author = {Salas, Jesús},
+  title = {Beyond Worst-Case Subset Sum: An Adaptive, Structure-Aware Solver with Sub-$2^{n/2}$ Enumeration},
+  journal = {arXiv preprint},
+  volume = {2503.20162},
+  year = {2025}
+}
+
