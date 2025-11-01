@@ -843,3 +843,230 @@ namespace ConsoleApp3
 
     }
 }
+
+#include <iostream>
+#include <vector>
+#include <numeric>
+#include <unordered_map>
+#include <chrono>
+#include <fstream>
+#include <string>
+#include <algorithm>
+#include <functional>
+#include <cassert>
+#include <set>
+
+// Use a specific integer type for clarity and to avoid narrowing errors.
+using int_type = long long;
+
+// --- Define Subset as a type alias at the top ---
+using Subset = std::vector<int_type>;
+
+// --- Globals to simplify recursive calls, matching your original style ---
+std::vector<int_type> numsl, numsr;
+std::unordered_map<int_type, std::pair<int_type, int_type>> dpl, dpr;
+int_type k_remaining;
+std::set<Subset> solutions;
+
+// --- Your DP State and Utility Functions ---
+
+// Use a template for the get_dp_val function to handle the map type generically.
+template<typename DPMap>
+std::pair<int_type, int_type> get_dp_val(const DPMap& dp, int_type key) {
+    auto it = dp.find(key);
+    if (it == dp.end()) {
+        return {-1, -1}; // Not found
+    }
+    return it->second;
+}
+
+// Use a template for the updateDP function.
+template<typename DPMap>
+void updateDP(DPMap& dp, int_type number, int_type index, int_type max_len) {
+    std::vector<std::pair<int_type, std::pair<int_type, int_type>>> updates;
+    for (const auto& pair : dp) {
+        int_type sum = pair.first;
+        int_type count = pair.second.second;
+  
+        if (count + 1 > max_len) continue;
+
+        int_type new_sum = sum + number;
+        int_type new_count = count + 1;
+        
+        auto it = dp.find(new_sum);
+        if (it == dp.end() || it->second.second > new_count) {
+            updates.push_back({new_sum, {std::min(pair.second.first, index), new_count}});
+        }
+    }
+    for (const auto& u : updates) {
+        dp[u.first] = u.second;
+    }
+}
+
+
+// --- Your Enumeration Logic (Adapted for the DP state) ---
+
+void enumerateSubsetsRight(int_type idx, int_type target, Subset& current, bool complementRight);
+
+void enumerateSubsetsLeft(int_type idx, int_type target, Subset& current, int_type remaining, bool complementLeft, bool complementRight) {
+    if (k_remaining <= 0) return;
+
+    if (target == 0 && idx == numsl.size()) {
+        enumerateSubsetsRight(0, remaining, current, complementRight);
+        return;
+    }
+
+    if (idx >= numsl.size() || target < 0) return;
+
+    if (get_dp_val(dpl, target).first != -1 && get_dp_val(dpl, target).first <= idx + 1) {
+        if (complementLeft) current.push_back(numsl[idx]);
+        enumerateSubsetsLeft(idx + 1, target, current, remaining, complementLeft, complementRight);
+        if (complementLeft) current.pop_back();
+    }
+    
+    if (k_remaining <= 0) return;
+
+    if (target >= numsl[idx] && get_dp_val(dpl, target - numsl[idx]).first != -1 && get_dp_val(dpl, target - numsl[idx]).first <= idx) {
+        if (!complementLeft) current.push_back(numsl[idx]);
+        enumerateSubsetsLeft(idx + 1, target - numsl[idx], current, remaining, complementLeft, complementRight);
+        if (!complementLeft) current.pop_back();
+    }
+}
+
+void enumerateSubsetsRight(int_type idx, int_type target, Subset& current, bool complementRight) {
+    if (k_remaining <= 0) return;
+
+    if (target == 0 && idx == numsr.size()) {
+        Subset sorted_current = current;
+        std::sort(sorted_current.begin(), sorted_current.end());
+        if (solutions.find(sorted_current) == solutions.end()) {
+            solutions.insert(sorted_current);
+            k_remaining--;
+        }
+        return;
+    }
+    
+    if (idx >= numsr.size() || target < 0) return;
+
+    if (get_dp_val(dpr, target).first != -1 && get_dp_val(dpr, target).first <= idx + 1) {
+        if (complementRight) current.push_back(numsr[idx]);
+        enumerateSubsetsRight(idx + 1, target, current, complementRight);
+        if (complementRight) current.pop_back();
+    }
+
+    if (k_remaining <= 0) return;
+
+    if (target >= numsr[idx] && get_dp_val(dpr, target - numsr[idx]).first != -1 && get_dp_val(dpr, target - numsr[idx]).first <= idx) {
+        if (!complementRight) current.push_back(numsr[idx]);
+        enumerateSubsetsRight(idx + 1, target - numsr[idx], current, complementRight);
+        if (!complementRight) current.pop_back();
+    }
+}
+
+
+// --- Main Solver Function ---
+void findKSubsets(const std::vector<int_type>& nums, int_type target, int_type k) {
+    numsl.clear();
+    numsr.clear();
+    dpl.clear();
+    dpr.clear();
+    solutions.clear();
+    k_remaining = k;
+
+    int_type n = nums.size();
+    int_type suml_total = 0, sumr_total = 0;
+    for(int_type i = 0; i < n / 2; ++i) { suml_total += nums[i]; numsl.push_back(nums[i]); }
+    for(int_type i = n / 2; i < n; ++i) { sumr_total += nums[i]; numsr.push_back(nums[i]); }
+
+    dpl[0] = {0, 0};
+    dpr[0] = {0, 0};
+    
+    const int_type max_len_l = numsl.size() / 2 + 2;
+    const int_type max_len_r = numsr.size() / 2 + 2;
+
+    int_type half_size = (n + 1) / 2;
+    for (int_type i = 0; i < half_size; ++i) {
+        if (k_remaining <= 0) break;
+        // std::cout<<"Iteration "<<i<<std::endl;
+        // auto dpl_prev = dpl;
+        // auto dpr_prev = dpr;
+
+        int_type num_l = (i < numsl.size()) ? numsl[i] : -1;
+        int_type num_r = (i < numsr.size()) ? numsr[i] : -1;
+        
+        auto check_combinations = [&](const Subset& base_subset, int_type rem_target) {
+            if (k_remaining <= 0) return;
+            for (const auto& l_pair : dpl) {
+                if (k_remaining <= 0) break;
+                int_type sum_l = l_pair.first;
+                
+                // dpl = dpl_prev; dpr = dpr_prev;
+                Subset current = base_subset;
+
+                if (dpr.count(rem_target - sum_l))
+                    enumerateSubsetsLeft(0, sum_l, current, rem_target - sum_l, false, false);
+                
+                int_type req_r_comp = sumr_total - (rem_target - sum_l);
+                if (req_r_comp >= 0 && dpr.count(req_r_comp))
+                     enumerateSubsetsLeft(0, sum_l, current, req_r_comp, false, true);
+                
+                int_type req_r_from_comp_l = rem_target - (suml_total - sum_l);
+                if (req_r_from_comp_l >= 0 && dpr.count(req_r_from_comp_l) && dpl.count(suml_total - sum_l))
+                     enumerateSubsetsLeft(0, suml_total - sum_l, current, req_r_from_comp_l, true, false);
+
+                int_type req_r_both_comp = sumr_total - (rem_target - (suml_total - sum_l));
+                if (req_r_both_comp >= 0 && dpr.count(req_r_both_comp) && dpl.count(suml_total - sum_l))
+                     enumerateSubsetsLeft(0, suml_total - sum_l, current, req_r_both_comp, true, true);
+            }
+        };
+        
+        if (num_l != -1) check_combinations({num_l}, target - num_l);
+        if (num_r != -1) check_combinations({num_r}, target - num_r);
+        if (num_l != -1 && num_r != -1) check_combinations({num_l, num_r}, target - num_l - num_r);
+        if (i > 0) check_combinations({}, target);
+
+        // dpl = dpl_prev; dpr = dpr_prev;
+        if (num_l != -1) updateDP(dpl, num_l, i + 1, max_len_l);
+        if (num_r != -1) updateDP(dpr, num_r, i + 1, max_len_r);
+    }
+    
+    std::cout << "Found " << solutions.size() << " unique subsets (up to K=" << k << "):" << std::endl;
+    for (const auto& s : solutions) {
+        int_type current_sum = std::accumulate(s.begin(), s.end(), 0LL);
+        std::cout << "  { ";
+        for (int_type num : s) std::cout << num << " ";
+        std::cout << "} -> sum=" << current_sum << std::endl;
+        assert(current_sum == target);
+    }
+}
+
+// --- Test Case Driver ---
+void solveTestCases(int test_num) {
+    std::vector<int_type> nums;
+    int_type n, target, k;
+    std::ifstream file("tests/file_" + std::to_string(test_num) + ".txt");
+    if (!file.is_open()) {
+        std::cerr << "Error opening file tests/file_" << std::to_string(test_num) << ".txt" << std::endl;
+        return;
+    }
+    file >> n >> target >> k;
+    nums.resize(n);
+    for (int i = 0; i < n; ++i) file >> nums[i];
+    file.close();
+
+    std::cout << "--- Solving Test Case " << test_num << " ---" << std::endl;
+    std::cout << "N=" << n << ", Target=" << target << ", K=" << k << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
+    findKSubsets(nums, target, k);
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    std::cout << "Time taken: " << duration.count() << " ms" << std::endl;
+    std::cout << "------------------------------------" << std::endl << std::endl;
+}
+
+int main() {
+    solveTestCases(0);
+    return 0;
+}
+
+
